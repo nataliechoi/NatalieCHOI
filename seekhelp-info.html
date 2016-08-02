@@ -1,0 +1,147 @@
+<div id="seekhelp-info" data-role="page">
+	
+	<style scoped>
+		#seekhelp-info .ui-content {
+			position: relative;
+		}
+		
+		#favorite-popup {
+			max-width: 400px;
+			text-align: center;
+		}
+		
+		#seekhelp-info-container h6 {
+			margin: 0;
+			padding-top: 1em;
+			padding-bottom: 1em;
+			border-bottom: 1px solid #ddd;
+			font-weight: normal;
+			color: darkblue;
+		}
+		
+		#seekhelp-info-container h6 a {
+			color: darkblue;
+		}
+		
+		#seekhelp-info-container h6:first-of-type {
+			padding-right: 35px;
+		}
+		
+		#seekhelp-info-container h6:last-of-type {
+			border-bottom: none;
+		}
+		
+		#seekhelp-info-container h6 strong {
+			color: black;
+		}
+		
+		#map {
+			width: 100%;
+			margin-bottom: 20px;
+		}
+	</style>
+	
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<a href="seekhelp-list.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+	
+	<div role="main" class="ui-content">
+
+		<div id="map"></div>
+
+		<div id="seekhelp-info-container" class="ui-body ui-body-a ui-corner-all">
+			<a href="#favorite-popup" data-type="seekhelp" data-rel="popup" data-position-to="window" data-transition="pop" class="btn-favorite ui-btn ui-shadow ui-corner-all ui-icon-star ui-btn-b ui-btn-icon-notext ui-btn-inline ui-mini"></a>
+		</div>
+
+		<div data-role="popup" id="favorite-popup" data-overlay-theme="b" data-dismissible="false">
+			<div role="main" class="ui-content">
+				<p>Added to your favorite list.</p>
+				<a class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b ui-mini" data-rel="back">OK</a>
+			</div>
+		</div>
+
+		<script>
+			var seekhelp_id = $.cookie('seekhelp-info-id');
+				
+			if(typeof seekhelp_id === 'undefined') {
+				$.mobile.changePage('seekhelp-list.html', {transition: 'none'});
+			}
+			
+			$('.btn-back').attr('href', $.cookie('from') + '.html');
+			
+			var mapHeight = $(window).height() / 3;
+			if (mapHeight < 200) {
+				mapHeight = 200;
+			}
+
+			$('#map').css('height', mapHeight + 'px');
+			
+			// get seek help info
+			$.ajax({
+				method: "GET",
+				url: "api/seekhelp-info.php",
+				data: {'id': seekhelp_id},
+				dataType: 'JSON',
+				context: this
+			}).done(function (result) {
+				if(result.status) {
+					var info = result.data;
+					// build elements with jQuery, append content
+					$('#seekhelp-info-container').append(
+						$('<h6 />').append(
+							$('<strong />').text('Name:'), 
+							$('<div />').text(info.name)
+						),
+						$('<h6 />').append(
+							$('<strong />').text('Address:'), 
+							$('<div />').text(info.address)
+						), 
+						$('<h6 />').append(
+							$('<strong />').text('Tel:'), 
+							$('<div />').append(
+								$('<a href="tel:' + info.tel + '" />').text(info.tel)
+							)
+						), 
+						$('<h6 />').append(
+							$('<strong />').text('Email:'), 
+							$('<div />').append(
+								$('<a href="email:' + info.email + '" />').text(info.email)
+							)
+						)
+					);
+
+					// apply google map
+					$.ajax({
+						type: "POST", 
+						url: "https://maps.googleapis.com/maps/api/geocode/json?language=zh-TW&address=" + info.address,
+						dataType: 'json', 
+						context: this
+					}).done(function(res) {
+						new google.maps.Marker({
+							position: res.results[0].geometry.location,
+							map: new google.maps.Map($('#map').get(0), {
+								center: res.results[0].geometry.location,
+								zoom: 15
+							})
+						});
+					});
+				}
+			});
+			
+			// check auth for show/hide favorite list
+			$.ajax({
+				method: "get",
+				url: "api/auth/check.php",
+				dataType: 'JSON'
+			}).done(function( result ) {
+				if(!result.status) {
+					$('.btn-favorite').hide();
+				} else {
+					$('.btn-favorite').data('id', seekhelp_id);
+				}
+			});
+		</script>
+	</div>
+</div>

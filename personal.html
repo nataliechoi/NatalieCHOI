@@ -1,0 +1,113 @@
+<div id="personal" data-role="page">
+
+	<style scoped>
+		#personal-update-form, 
+		#personal-changepw-form {
+			margin-top: 0;
+			margin-bottom: 0;
+		}
+	</style>
+
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<!--Back to home page Button-->
+		<a href="home.html" data-transition="flip" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+
+	<div role="main" class="ui-content">
+		<h2 class="title">Personal Information</h2>
+		<!--Personal Update Form-->
+		<form id="personal-update-form" action="api/my/personal.php?update" data-ajax="false">
+			<div data-role="fieldcontain">
+				<input id="email" type="text" disabled />
+				<input id="last_name" type="text" name="last_name" placeholder="Last Name" data-clear-btn="true" />
+				<input id="first_name" type="text" name="first_name" placeholder="First Name" data-clear-btn="true" />
+				<input type="submit" data-theme="b" value="Update" />
+			</div>
+		</form>
+		<!--Change Password Form only shows when login without OAuth-->
+		<form id="personal-changepw-form" action="api/my/personal.php?changepw" data-ajax="false" class="hide">
+			<div data-role="fieldcontain" class="ui-hide-label">
+				<input class="password" type="password" name="old_password" placeholder="Current Password" data-clear-btn="true" />
+				<input class="password" type="password" name="new_password" placeholder="New Password" data-clear-btn="true" />
+				<input class="password" type="password" name="confirm_password" placeholder="Confirm Password" data-clear-btn="true" />
+				<input type="submit" data-theme="b" value="Change Password" />
+			</div>
+		</form>
+		<!--Popup when user fail to change password-->
+		<div data-role="popup" id="changepw-popup" data-overlay-theme="b" data-transition="slidedown">
+			<div data-role="header">
+				<h1>Change Password Failure</h1>
+			</div>
+			<div role="main" class="ui-content"><p></p></div>
+		</div>
+	</div>
+	
+	<script>
+		// Get personal information from AJAX
+		$.ajax({
+			method: "get",
+			url: "api/my/personal.php", 
+			dataType: 'JSON'
+		}).done(function( result ) {
+			if(result.status) {
+				var user = result.data;
+				if(user.email) {
+					// If no email in user session, than it is OAuth login
+					$('#email').val(user.email);
+					$('#personal-changepw-form').show();
+				} else {
+					// If not OAuth login, show the change password form
+					$('#email').val(user.oauth.charAt(0).toUpperCase() + user.oauth.slice(1) + ' OAuth');
+					$('#personal-changepw-form').hide();
+				}
+				// Fill user name
+				$('#last_name').val(user.last_name);
+				$('#first_name').val(user.first_name);
+			}
+		});
+		
+		$('#personal-update-form').submit(function(e) {
+			// AJAX to update personal information
+			$.ajax({
+				method: "put",
+				url: $(this).attr('action'),
+				data: $(this).serialize(), 
+				dataType: 'JSON'
+			}).done(function( result ) {
+				if(result.status) {
+					// Successful then refresh to get update
+					window.location.reload(true);
+				}
+			});
+			e.preventDefault();
+			return false;
+		});
+		
+		$('#personal-changepw-form').submit(function(e) {
+			// AJAX to change password
+			$.ajax({
+				method: "put",
+				url: $(this).attr('action'),
+				data: $(this).serialize(), 
+				dataType: 'JSON', 
+				context: this
+			}).done(function( result ) {
+				if (result.status) {
+					// Successful then logout all OAuth and redirect to login page
+					hello('google').logout();
+					hello('facebook').logout();
+					window.location.hash = 'login';
+					window.location.reload(true);
+				} else {
+					// Show popup when change password failure
+					$('#changepw-popup').find('p').text(result.message);
+					$('#changepw-popup').popup("open");
+					this.reset();
+				}
+			});
+			e.preventDefault();
+			return false;
+		});
+	</script>
+</div>

@@ -1,0 +1,96 @@
+<div id="seekhelp-list" data-role="page">
+
+	<style scoped>
+		#seekhelp-list-container {
+			margin-top: 0;
+		}
+
+		#seekhelp-list-container img {
+			margin-top: 0.7em;
+			margin-left: 0.7em;
+			width: 60px;
+			height: 60px;
+			border-radius: 30px;
+			-webkit-border-radius: 30px;
+			-moz-border-radius: 30px;
+			box-shadow: 0 0 4px rgba(0, 0, 0, .4);
+			-webkit-box-shadow: 0 0 4px rgba(0, 0, 0, .4);
+			-moz-box-shadow: 0 0 4px rgba(0, 0, 0, .4);
+		}
+		
+		#seekhelp-list-container span.ui-btn {
+			font-size: 12px;
+			margin: 0;
+			margin-right: 2px;
+			width: 20px;
+			height: 20px;
+		}
+		
+		#seekhelp-list-container span.ui-btn:after {
+			margin-top: -10px;
+			margin-left: -10px;
+			width: 20px;
+			height: 20px;
+		}
+		
+		#seekhelp-list-container a {
+			color: #555;
+		}
+	</style>
+
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<a href="home.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+
+	<div role="main" class="ui-content">
+		<h2 class="title">Seek Help</h2>
+		<ul id="seekhelp-list-container" data-role="listview"></ul>
+	</div>
+
+	<script>
+		// get seek help list
+		$.ajax({
+			method: "GET",
+			url: "api/seekhelp-list.php",
+			dataType: 'JSON',
+			context: this
+		}).done(function (result) {
+			if(result.status) {
+				var helps = result.data, 
+					$seekhelpContainer = $('#seekhelp-list-container');
+				for (var i in helps) {
+					// apply content and build elements with jQuery
+					$seekhelpContainer.append(
+						$('<li />').append(
+							$('<a />')
+								.attr({
+									'href': 'seekhelp-info.html', 
+									'data-transition': 'slide', 
+									'data-id': helps[i].id
+								})
+								.append(
+									$('<h2 />').text(helps[i].name), 
+									$('<p style="width:35%; float:left;" />').append(
+										$('<span class="ui-btn ui-corner-all ui-icon-phone ui-btn-icon-notext ui-btn-inline ui-mini" />'), 
+										$('<a href="tel:' + helps[i].tel + '" />').text(helps[i].tel)
+									), 
+									$('<p style="width:65%; float:left;" />').append(
+										$('<span class="ui-btn ui-corner-all ui-icon-mail ui-btn-icon-notext ui-btn-inline ui-mini" />'), 
+										$('<a href="mailto:' + helps[i].email + '" />').text(helps[i].email)
+									)
+								)
+								.click(function() {
+									$.cookie('seekhelp-info-id', $(this).data('id'));
+									$.cookie('from', 'seekhelp-list');
+								})
+						)
+					);
+				}
+				// After put all activities to container, refresh the jQueryMobile element views
+				$seekhelpContainer.listview('refresh');
+			}
+		});
+	</script>
+</div>

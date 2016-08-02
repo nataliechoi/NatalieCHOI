@@ -1,0 +1,230 @@
+<div id="favorite" data-role="page">
+
+	<style scoped>
+		.title {
+			padding-right: 30px;
+		}
+		
+		#favorite .ui-content {
+			position: relative;
+		}
+		
+		#favorite .title {
+			text-align: left;
+			margin: 0;
+		}
+		
+		#favorite-form .ui-controlgroup, 
+		#favorite-list {
+			margin-top: 0;
+		}
+
+		fieldset.flat-checkbox {
+			margin-left: -1em;
+			margin-right: -1em;
+		}
+
+		fieldset.flat-checkbox .ui-checkbox {
+			-webkit-border-radius: 0px;
+			-moz-border-radius: 0px;
+			border-radius: 0px;
+			margin-bottom: 10px;
+		}
+
+		fieldset.flat-checkbox .ui-checkbox label {
+			border-left: none;
+			border-right: none;
+			border-bottom: 1px solid #ddd !important;
+			background-color: white;
+		}
+
+		#favorite-list > li {
+			margin-bottom: 10px;
+			border-bottom: 1px solid #ddd !important;
+			font-weight: bold;
+		}
+		
+		#favorite-chklist p, 
+		#favorite-list > li  p {
+			font-size: .75em;
+			font-weight: 400;
+			margin-top: .6em;
+			margin-bottom: 0;
+		}
+		
+		#favorite-chklist label {
+			text-overflow: ellipsis;
+			overflow: hidden;
+			white-space: nowrap;
+		}
+
+		#delete-popup {
+			max-width: 400px;
+		}
+		
+		#btn-edit, 
+		#btn-done, 
+		#btn-delete {
+			position: absolute;
+			top: 2px;
+			right: 10px;
+			margin-top: 1em;
+			font-size: 14px;
+		}
+
+		#btn-confirm, 
+		#btn-cancel {
+			float: right;
+		}
+	</style>
+
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<a href="home.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+
+	<div role="main" class="ui-content">
+
+		<h2 class="title">My Favorite</h2>
+		
+		<a id="btn-edit" class="ui-btn ui-shadow ui-corner-all ui-icon-edit ui-btn-icon-notext ui-btn-b ui-btn-inline ui-mini"></a>
+		<a id="btn-done" class="hide ui-btn ui-shadow ui-corner-all ui-icon-check ui-btn-icon-notext ui-btn-b ui-btn-inline ui-mini"></a>
+		<a id="btn-delete" href="#delete-popup" data-rel="popup" data-position-to="window" data-transition="pop" class="hide ui-btn ui-shadow ui-corner-all ui-icon-delete ui-btn-icon-notext ui-btn-b ui-btn-inline ui-mini"></a>
+
+		<div data-role="popup" id="delete-popup" data-overlay-theme="b" data-dismissible="false">
+			<div role="main" class="ui-content">
+				<p>Are you sure to remove this from favorite list?</p>
+				<a id="btn-cancel" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-mini" data-rel="back">Cancel</a>
+				<a id="btn-confirm" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b ui-mini" data-rel="back">YES</a>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+
+		<ul id="favorite-list" data-role="listview"></ul>
+
+		<form id="favorite-form" class="hide">
+			<fieldset data-role="controlgroup" data-iconpos="right" class="flat-checkbox" >
+				<div id="favorite-chklist" class="ui-controlgroup-controls"></div>
+			</fieldset>
+		</form>
+
+		<script>
+			// get user's favorite list
+			function fetch() {
+				$.ajax({
+					method: "GET",
+					url: "api/my/favorite.php",
+					dataType: 'JSON',
+					context: this
+				}).done(function (result) {
+					if(result.status) {
+						var favorite_list = result.data, 
+							$favoriteList = $('#favorite-list').empty(),
+							$favoriteCheck = $('#favorite-chklist').empty();
+							
+						// Loop through all data and build elements with jQuery
+						for (var id in favorite_list) {
+							$favoriteList.append(
+								$('<li />')
+									.append(
+										$('<a href="' + favorite_list[id].link + '.html" />')
+											.data({
+												'id': favorite_list[id].source, 
+												'type': favorite_list[id].link
+											})
+											.append(
+												$('<span style="color:darkred;" />').text(favorite_list[id].name), 
+												$('<p />').append(
+													$('<span />').text(favorite_list[id].type), 
+													$('<span style="float:right;" />').text(favorite_list[id].time)
+												)
+											).click(function() {
+												$.cookie($(this).data('type') + '-id', $(this).data('id'));
+												$.cookie('from', 'favorite');
+											})
+									)
+							);
+							$favoriteCheck.append(
+								$('<div />')
+									.attr('class', 'chk-favorite-wrapper')
+									.data('id', id)
+									.append(
+										$('<input />').attr({
+											'type': 'checkbox',
+											'id': 'checkbox-' + id,
+											'name': 'favorites[]',
+											'value': id
+										}),
+										$('<label />')
+											.attr('for', 'checkbox-' + id)
+											.append(
+												$('<span style="color:darkred;" />').text(favorite_list[id].name), 
+												$('<p />').append(
+													$('<span />').text(favorite_list[id].type), 
+													$('<span style="float:right;" />').text(favorite_list[id].time)
+												)
+											)
+									)
+							);
+						}
+						$favoriteList.listview('refresh');
+						$('input[type="checkbox"]').checkboxradio();
+					}
+				});
+			}
+
+			// handle user click event on favorite list
+			$('#favorite-chklist').on('change', 'input[type="checkbox"]', function (e) {
+				var checked = false;
+				$(e.delegateTarget).find('input[type="checkbox"]').each(function () {
+					if ($(this).prop('checked') === true) {
+						checked = true;
+						return false;
+					}
+				});
+				if (checked) {
+					$('#btn-delete').removeClass('hide');
+					$('#btn-done').addClass('hide');
+				} else {
+					$('#btn-delete').addClass('hide');
+					$('#btn-done').removeClass('hide');
+				}
+			});
+
+			$('#btn-edit').click(function () {
+				$(this).addClass('hide');
+				$('#favorite-list').addClass('hide');
+				$('#btn-delete').addClass('hide');
+				$('#btn-done').removeClass('hide');
+				$('#favorite-form').removeClass('hide');
+			});
+
+			$('#btn-done').click(function () {
+				$(this).addClass('hide');
+				$('#favorite-form').addClass('hide');
+				$('#btn-delete').addClass('hide');
+				$('#btn-edit').removeClass('hide');
+				$('#favorite-list').removeClass('hide');
+			});
+
+			$('#btn-confirm').click(function () {
+				$.ajax({
+					method: "DELETE",
+					url: "api/my/favorite.php?remove",
+					data: $('#favorite-form').serialize(), 
+					dataType: 'JSON'
+				}).done(function(result) {
+					if(result.status) {
+						fetch();
+						$('#btn-done').trigger('click');
+					}
+				});
+			});
+
+			fetch();
+		</script>
+
+	</div>
+
+</div>

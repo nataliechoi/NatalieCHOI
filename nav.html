@@ -1,0 +1,178 @@
+<style>
+	#page-list {
+		margin-top: 20px;
+	}
+
+	#page-list .ui-collapsible {
+		padding: 0;
+	}
+
+	#page-list .ui-collapsible > h3 {
+		margin: 0;
+	}
+	
+	#panel-header {
+		height: 100%;
+		overflow: auto;
+	}
+
+	.avatar-container {
+		text-align: center;
+		margin-top: 20px;
+	}
+	
+	#name {
+		margin-bottom: 10px;
+	}
+
+	.avatar-container > img {
+		width: 140px;
+		height: 140px;
+		border-radius: 70px;
+		-webkit-border-radius: 70px;
+		-moz-border-radius: 70px;
+		box-shadow: 0 0 8px rgba(0, 0, 0, .8);
+		-webkit-box-shadow: 0 0 8px rgba(0, 0, 0, .8);
+		-moz-box-shadow: 0 0 8px rgba(0, 0, 0, .8);
+		margin-bottom: 10px;
+	}
+
+	.guest-container {
+		display: none;
+	}
+
+	.user-container {
+		display: none;
+	}
+</style>
+
+<div class="avatar-container">
+	<!--Will show user picture when using Facebook / Google OAuth login-->
+	<img alt="user" src="assets/image/user.png" />
+	
+	<!--Will show user name when logged-in-->
+	<div id="name"></div>
+	
+	<!--Login button will shown when user not yet logged-in-->
+	<div class="guest-container">
+		<a href="login.html" class="ui-btn ui-btn-inline ui-icon-user ui-btn-icon-left ui-mini ui-corner-all">
+			Login
+		</a>
+	</div>
+	<!--My Favorite button and Logout button will shown when user has logged-in-->
+	<div class="user-container">
+		<a href="favorite.html" class="ui-btn ui-btn-inline ui-icon-star ui-btn-icon-left ui-mini ui-btn-b ui-corner-all">
+			My Favorite
+		</a>
+		<a id="btn-logout" href="" class="ui-btn ui-btn-inline ui-icon-power ui-btn-icon-left ui-mini ui-corner-all">
+			Logout
+		</a>
+	</div>
+</div>
+
+<!--Webpages list for user to switch-->
+<ul id="page-list" class="ui-alt-icon ui-nodisc-icon">
+	<li data-icon="home"><a href="home.html">Home</a></li>
+	<li><a href="drug-list.html">Drug Information</a></li>
+	<li><a href="tnr-list.html">Treatment & Rehabilitation</a></li>
+	<li><a href="seekhelp-list.html">Seek Help</a></li>
+	<li><a href="activity-list.html">Anti-drug Activities</a></li>
+	<li><a href="video-list.html">Anti-drug Videos</a></li>
+	<li><a href="contact-us.html">Contact Us</a></li>
+	<li><a href="api-list.html" style="background-color:darkred;color:white;">API</a></li>
+</ul>
+
+<!--Include Social Media Login Javascript Plugin-->
+<script src="assets/lib/hellojs/hello.all.min.js"></script>
+<script>
+	// Init the webpages list because this page is being AJAX
+	$('#page-list').listview();
+	
+	// When changing the webpage, hide the menu sidebar
+	$('#page-list a, .avatar-container a').click(function(e) {
+		$('#panel-header').panel("close");
+		if(window.location.hash) {
+			var hash = window.location.hash.substring(1);
+			if($(this).attr('href').indexOf(hash) !== -1) {
+				e.preventDefault();
+				return false;
+			}
+		}
+	});
+	
+
+	$('#btn-logout').click(function() {
+		// AJAX to delete server login session 
+		$.ajax({
+			method: "get",
+			url: "api/auth/logout.php",
+			dataType: 'JSON'
+		}).done(function( result ) {
+			if(result.status) {
+				// Logout all OAuth, redirect to login page
+				hello('google').logout();
+				hello('facebook').logout();
+				window.location.hash = 'login';
+				window.location.reload(true);
+			}
+		});
+	});
+	
+
+	function checkLogin() {
+		$.ajax({
+			method: "get",
+			url: "api/auth/check.php",
+			dataType: 'JSON'
+		}).done(function( result ) {
+			if(!result.status) { 
+				// Show login button and hide personal information button when user not yet logged-in
+				$('.guest-container').show();
+				$('.btn-personal').hide();
+			} else {
+				// Show My Favorite, Logout, personal information button, fill user name when user logged-in
+				$('.user-container').show();
+				$('.btn-personal').show();
+				$('#name').text(result.data.first_name + ' ' + result.data.last_name);
+				if(result.data.hasOwnProperty('avatar')) {
+					// Show user picture when using OAuth login
+					$('.avatar-container img').attr('src', result.data.avatar);
+				}
+			}
+		});
+	}
+	
+	// Init Social Media OAuth token / app id
+	hello.init({
+		facebook: '110649035795144',
+		google: '394534813665-efs49bnnd7vrns8ekifsafls3tminabo.apps.googleusercontent.com'
+	}, {redirect_uri: 'oauth.html'});
+	
+	var currentTime = new Date().getTime() / 1000;
+	var googleAuth = hello('google').getAuthResponse();
+	var facebookAuth = hello('facebook').getAuthResponse();
+	
+	if( // Check if user using OAuth login and if it is expired
+		googleAuth && currentTime < googleAuth.expires || 
+		facebookAuth && currentTime < facebookAuth.expires
+	) {
+		var auth = googleAuth ? 'google' : 'facebook';
+		hello(auth).api('/me').then(function (user) {
+			// Get user information from OAuth and AJAX to register or login
+			$.ajax({
+				method: "post",
+				url: "api/auth/third-party.php",
+				data: { auth: auth, data: user }, 
+				dataType: 'JSON' 
+			}).done(function() {
+				// After register or login from OAuth, AJAX to verify the status
+				checkLogin();
+			});
+		});
+	} else {
+		// Logout all OAuth and verify user login status
+		hello('google').logout();
+		hello('facebook').logout();
+		checkLogin();
+	}
+</script>

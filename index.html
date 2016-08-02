@@ -1,0 +1,75 @@
+<!-- A container for all webpages -->
+
+<html>
+	<head>
+		<title>Narcotics Journal</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="assets/lib/jquerymobile/jquery.mobile-1.4.5.min.css">
+		<link rel="stylesheet" href="assets/common.css">
+		<script src="assets/lib/jquery/jquery-1.12.4.min.js"></script>
+		<script src="assets/lib/jquerymobile/jquery.mobile-1.4.5.min.js"></script>
+		<script src="assets/lib/jquery-cookie/jquery.cookie.js"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyDTEcFm_rLO7gNFINu1yBGeHh7pqdVjvOM"></script>
+	</head>
+	<body>
+		<div id="wrapper" data-role="page">
+			<!--Menu Sidebar container to contain menu from AJAX loaded-->
+			<div id="panel-header" data-role="panel" class="navmenu" data-position="right" data-display="overlay"></div>
+		</div>
+
+		<script>
+			// Default not changing the URL when changing to other webpages
+			$.mobile.changePage.defaults.changeHash = false;
+
+			// Webpage change listener
+			$(document).on("pagechange", function (e, locater) {
+				 // Change the hash when changing the webpage
+				if (locater.absUrl) {
+					// Get the page name without .html extension
+					var page = locater.absUrl.replace(window.location.href.split('#')[0], '').replace('.html', '');
+					if (page !== 'home') { // Change the hash to page name
+						window.location.hash = page;
+					} else { // When page is home.html, do not change the URL and hash
+						history.pushState('', document.title, window.location.pathname);
+					}
+				} 
+				// Change webpage when there is a page hash on URL
+				else if (window.location.hash) { 
+					$.mobile.changePage(window.location.hash.substring(1) + '.html', {transition: 'none'});
+				} 
+				// When the URL do not has hash, goto home page
+				else { 
+					$.mobile.changePage('home.html', {transition: 'none'});
+				}
+			});
+
+			// Load the Menu Sidebar using AJAX
+			$('#panel-header').load('nav.html', function () {
+				// Binding onclick event to open it after AJAX
+				$('body').on('click', '.btn-navmenu', function () {
+					$('#panel-header').panel("open");
+				});
+			});
+			
+			// Binding onclick event to all Add-To-Favorite buttons
+			$(document).on('click', '.btn-favorite', function() {
+				// AJAX to add to user's favorite list when clicked the button
+				$.ajax({
+					method: "post",
+					url: "api/my/favorite.php?create",
+					data: {
+						type: $(this).data('type'),  // favorite type
+						source_id: $(this).data('id') // type id
+					}, 
+					dataType: 'JSON', 
+					context: this
+				}).done(function( result ) {
+					if(result.status) { 
+						// If successful then remove the Add-To-Favorite button
+						$(this).remove();
+					}
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,74 @@
+<div id="video-list" data-role="page">
+
+	<style scoped>
+		#video-list-container {
+			margin-top: 0;
+		}
+
+		#video-list-container img {
+			margin-top: 0.7em;
+			margin-left: 0.7em;
+			width: 60px;
+			height: 60px;
+			border-radius: 30px;
+			-webkit-border-radius: 30px;
+			-moz-border-radius: 30px;
+			box-shadow: 0 0 4px rgba(0, 0, 0, .4);
+			-webkit-box-shadow: 0 0 4px rgba(0, 0, 0, .4);
+			-moz-box-shadow: 0 0 4px rgba(0, 0, 0, .4);
+		}
+
+		#video-list-container h2 {
+			margin-top: 20px;
+		}
+	</style>
+
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<a href="home.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+
+	<div role="main" class="ui-content">
+		<h2 class="title">Anti-drug Videos</h2>
+		<ul id="video-list-container" data-role="listview"></ul>
+	</div>
+
+	<script>
+		// get user's favorite list
+		$.ajax({
+			method: "GET",
+			url: "api/video-list.php",
+			dataType: 'JSON',
+			context: this
+		}).done(function (result) {
+			if(result.status) {
+				var videos = result.data, 
+					$videoContainer = $('#video-list-container');
+					
+				// Loop through all data and build elements with jQuery
+				for (var i in videos) {
+					$videoContainer.append(
+						$('<li />').append(
+							$('<a />')
+								.attr({
+									'href': 'video-info.html', 
+									'data-transition': 'slide', 
+									'data-id': videos[i].id
+								})
+								.append(
+									$('<img src="http://img.youtube.com/vi/' + videos[i].code + '/0.jpg" />'),
+									$('<h2 />').text(videos[i].name)
+								)
+								.click(function() {
+									$.cookie('video-info-id', $(this).data('id'));
+									$.cookie('from', 'video-list');
+								})
+						)
+					);
+				}
+				$videoContainer.listview('refresh');
+			}
+		});
+	</script>
+</div>

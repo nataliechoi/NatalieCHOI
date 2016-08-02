@@ -1,0 +1,155 @@
+<div id="login" data-role="page">
+
+	<style scoped>
+		#login-form {
+			margin-top: 15px;
+		}
+
+		#login-form .ui-field-contain {
+			border-bottom: none;
+			padding: 0;
+			margin-bottom: 10px;
+		}
+
+		.ui-block-b {
+			text-align: right;
+		}
+
+		.ui-input-text {
+			padding-left: 2.375em;
+		}
+
+		#btn-register, 
+		#btn-forgotpw {
+			margin-top: 5px;
+			margin-left: 0;
+		}
+
+
+
+		#login-separate {
+			overflow: hidden;
+			text-align: center;
+			margin: 20px 0;
+			color: #666;
+		}
+		#login-separate:before,
+		#login-separate:after {
+			background-color: lightgray;
+			content: "";
+			display: inline-block;
+			height: 1px;
+			position: relative;
+			vertical-align: middle;
+			width: 50%;
+		}
+		#login-separate:before {
+			right: 0.5em;
+			margin-left: -50%;
+		}
+		#login-separate:after {
+			left: 0.5em;
+			margin-right: -50%;
+		}
+
+
+
+		.btn-oauth[oauth="facebook"] {
+			margin-left: 0;
+		}
+
+		.btn-oauth[oauth="google"] {
+			margin-right: 0;
+		}
+
+		.ui-icon-facebook:after {
+			background-image: url("assets/image/facebook.svg");
+		}
+
+		.ui-icon-google:after {
+			background-image: url("assets/image/google.svg");
+		}
+	</style>
+
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<!--Menu Button-->
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+	</div>
+
+	<div role="main" class="ui-content">
+		<!--Popup when user fail to login-->
+		<div data-role="popup" id="login-popup" data-overlay-theme="b" data-transition="slidedown">
+			<div data-role="header">
+				<h1>Login Failure</h1>
+			</div>
+			<div role="main" class="ui-content"><p></p></div>
+		</div>
+		<!--Login Form-->
+		<form id="login-form" action="api/auth/login.php" method="post" data-ajax="false">
+			<div data-role="fieldcontain">
+				<input type="text" name="username" placeholder="Username" data-clear-btn="true" />
+				<div class="ui-icon-user ui-btn-icon-left"></div>
+			</div>
+			<div data-role="fieldcontain">
+				<input type="password" name="password" placeholder="Password" data-clear-btn="true" />
+				<div class="ui-icon-lock ui-btn-icon-left"></div>
+			</div>
+			<input type="submit" data-theme="b" value="Login" />
+			<a id="btn-register" href="register.html" data-transition="slide" class="ui-shadow ui-btn ui-corner-all">Sign up</a>
+		</form>
+
+		<div id="login-separate"><small>Or login with social media</small></div>
+		<!--OAuth Login Buttons-->
+		<div class="ui-grid-a">
+			<div class="ui-block-a">
+				<a href="facebook" class="btn-oauth ui-btn ui-icon-facebook ui-btn-icon-left ui-corner-all ui-shadow ui-mini">
+					Facebook
+				</a>
+			</div>
+			<div class="ui-block-b">
+				<a href="google" class="btn-oauth ui-btn ui-icon-google ui-btn-icon-left ui-corner-all ui-shadow ui-mini">
+					Google
+				</a>
+			</div>
+		</div>
+	</div>
+	
+	<script>
+		// If OAuth Logged-in then switch to home page
+		if(hello('google').getAuthResponse() || hello('facebook').getAuthResponse()) {
+			$.mobile.changePage('home.html', {transition: 'fade', reverse: 'true'});
+		}
+
+		$('#login-form').submit(function (e) {
+			$.ajax({
+				method: "post",
+				url: $(this).attr('action'),
+				data: $(this).serialize(),
+				dataType: 'JSON',
+				context: this
+			}).done(function (result) {
+				if (result.status) {
+					// Redirect to home page when login success
+					window.location.href = '/';
+				} else {
+					// Show popup when login failure
+					$('#login-popup').find('p').text(result.message);
+					$('#login-popup').popup("open");
+					this.reset();
+				}
+			});
+			e.preventDefault();
+			return false;
+		});
+
+		// Open OAuth login page when OAuth button is clicked
+		$('.btn-oauth').click(function(e) {
+			hello($(this).attr('href')).login($(this).attr('href'), {
+				'display': 'page'
+			});
+			e.preventDefault();
+			return false;
+		});
+	</script>
+</div>

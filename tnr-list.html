@@ -1,0 +1,58 @@
+<div id="tnr-list" data-role="page">
+
+	<style scoped>
+		#tnr-list-container {
+			margin-top: 0;
+		}
+	</style>
+
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<a href="home.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+
+	<div role="main" class="ui-content">
+		<h2 class="title">Treatment & Rehabilitation</h2>
+		<ul id="tnr-list-container" data-role="listview"></ul>
+	</div>
+
+	<script>
+		// get Treatment & Rehabilitation list
+		$.ajax({
+			method: "GET",
+			url: "api/tnr-list.php",
+			dataType: 'JSON',
+			context: this
+		}).done(function (result) {
+			if(result.status) {
+				var tnrs = result.data, 
+					$tnrContainer = $('#tnr-list-container');
+					
+				// Loop through all result data and build elements with jQuery
+				for (var i in tnrs) {
+					$tnrContainer.append(
+						$('<li />').append(
+							$('<a />')
+								.attr({
+									'href': 'tnr-info.html', 
+									'data-ajax': 'true', 
+									'data-transition': 'slide', 
+									'data-id': tnrs[i].id
+								})
+								.append(
+									$('<h2 />').text(tnrs[i].name), 
+									$('<p />').text(tnrs[i].target)
+								)
+								.click(function() {
+									$.cookie('tnr-info-id', $(this).data('id'));
+									$.cookie('from', 'tnr-list');
+								})
+						)
+					);
+				}
+				$tnrContainer.listview('refresh');
+			}
+		});
+	</script>
+</div>

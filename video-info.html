@@ -1,0 +1,196 @@
+<div id="video-info" data-role="page">
+
+	<style scoped>
+		.title {
+			padding-right: 30px;
+		}
+		
+		#video-info .ui-content {
+			position: relative;
+		}
+
+		#video-info .ui-content .ui-listview {
+			margin-left: -1.3em;
+			margin-right: -1.3em;
+		}
+
+		#video-info .title {
+			text-align: left;
+			margin: 0;
+		}
+
+		#favorite-popup {
+			max-width: 400px;
+			text-align: center;
+		}
+
+		#video-info-container {
+			margin-left: -1em;
+			margin-right: -1em;
+		}
+
+		#video-info-container iframe {
+			width: 100%;
+		}
+		
+		#comment-form-wrapper form {
+			margin-bottom: 0;
+		}
+
+		#comment-container {
+			margin-top: 15px;
+			font-size: 12px;
+		}
+
+		#comment-container h2 {
+			color: darkred;
+		}
+
+		#comment-container .time {
+			color: #999;
+			float: right;
+			margin-right: 5px;
+		}
+
+		#comment-input {
+			width: 75% !important;
+		}
+
+		#comment-input .ui-input-text {
+			margin: 0;
+			border: none;
+			box-shadow: none;
+		}
+
+		#comment-input input {
+			width: 100%;
+			font-size: 14px;
+			padding: 0;
+		}
+
+		#comment-submit {
+			width: 25% !important;
+		}
+
+		#comment-submit .ui-input-btn {
+			padding: 5px;
+			font-size: 14px;
+			margin: 0;
+			margin-right: 5px;
+		}
+	</style>
+
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<a href="video-list.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+
+	<div role="main" class="ui-content">
+
+		<h2 class="title"></h2>
+
+		<a href="#favorite-popup" data-type="video" data-rel="popup" data-position-to="window" data-transition="pop" class="btn-favorite ui-btn ui-shadow ui-corner-all ui-icon-star ui-btn-b ui-btn-icon-notext ui-btn-inline ui-mini"></a>
+
+		<div id="video-info-container">
+			<iframe frameborder="0" allowfullscreen></iframe>
+		</div>
+
+		<ul id="comment-container" data-role="listview">
+			<li id="comment-form-wrapper">
+				<form action="api/my/comment.php?create">
+					<input id="input-video_id" type="hidden" name="video_id" value="" />
+					<div class="ui-grid-a">
+						<div id="comment-input" class="ui-block-a">
+							<input type="text" name="comment" placeholder="Leave your comment" />
+						</div>
+						<div id="comment-submit" class="ui-block-b">
+							<input type="submit" value="Submit" />
+						</div>
+					</div>
+				</form>
+			</li>
+		</ul>
+
+		<div data-role="popup" id="favorite-popup" data-overlay-theme="b" data-dismissible="false">
+			<div role="main" class="ui-content">
+				<p>Added to your favorite list.</p>
+				<a class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b ui-mini" data-rel="back">OK</a>
+			</div>
+		</div>
+
+		<script>
+			var video_id = $.cookie('video-info-id');
+
+			if (typeof video_id === 'undefined') {
+				$.mobile.changePage('video-list.html', {transition: 'none'});
+			}
+			
+			$('.btn-back').attr('href', $.cookie('from') + '.html');
+
+			// get video info
+			$.ajax({
+				method: "GET",
+				url: "api/video-info.php",
+				data: {'id': video_id},
+				dataType: 'JSON',
+				context: this
+			}).done(function (result) {
+				if(result.status) {
+					// iframe youtube player for playing video
+					var video = result.data;
+					$('#video-info .title').text(video.info.name);
+					$('#video-info-container iframe')
+						.attr('src', 'https://www.youtube.com/embed/' + video.info.code + '?rel=0')
+						.css('height', (($(window).width() * 315) / 560) + 'px');
+
+					$('#input-video_id').val(video.info.id);
+
+					var $commentContainer = $('#comment-container');
+					for (var i in video.message) {
+						$commentContainer.prepend(
+							$('<li />').append(
+								$('<h2 />').append(
+									video.message[i].name,
+									$('<em class="time" />').text(video.message[i].time)
+								),
+								$('<p />').text(video.message[i].content)
+							)
+						);
+					}
+					$commentContainer.listview('refresh');
+				}
+			});
+			
+			$('#comment-form-wrapper form').submit(function(e) {
+				$.ajax({
+					method: "post",
+					url: $(this).attr('action'),
+					data: $(this).serialize(), 
+					dataType: 'JSON'
+				}).done(function( result ) {
+					if(result.status) {
+						window.location.reload(true);
+					}
+				});
+				e.preventDefault();
+				return false;
+			});
+			
+			// check auth for show/hide favorite list
+			$.ajax({
+				method: "get",
+				url: "api/auth/check.php",
+				dataType: 'JSON'
+			}).done(function( result ) {
+				if(!result.status) {
+					$('.btn-favorite').hide();
+					$('#comment-form-wrapper').hide();
+					$('#comment-container').listview('refresh');
+				} else {
+					$('.btn-favorite').data('id', video_id);
+				}
+			});
+		</script>
+	</div>
+</div>

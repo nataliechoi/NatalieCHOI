@@ -1,0 +1,117 @@
+<div id="tnr-info" data-role="page">
+	
+	<style scoped>
+		.title {
+			padding-right: 30px;
+		}
+		
+		#tnr-info .ui-content {
+			position: relative;
+		}
+		
+		#tnr-info .title {
+			text-align: left;
+			margin: 0;
+		}
+		
+		#favorite-popup {
+			max-width: 400px;
+			text-align: center;
+		}
+		
+		#tnr-info-container h6 {
+			margin: 0;
+			padding-top: 1em;
+			padding-bottom: 1em;
+			border-bottom: 1px solid #ddd;
+			font-weight: normal;
+			color: darkblue;
+		}
+		
+		#tnr-info-container h6:last-of-type {
+			border-bottom: none;
+		}
+		
+		#tnr-info-container h6 strong {
+			color: black;
+		}
+	</style>
+	
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<a href="tnr-list.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+	
+	<div role="main" class="ui-content">
+
+		<h2 class="title"></h2>
+		
+		<a href="#favorite-popup" data-type="tnr" data-rel="popup" data-position-to="window" data-transition="pop" class="btn-favorite ui-btn ui-shadow ui-corner-all ui-icon-star ui-btn-b ui-btn-icon-notext ui-btn-inline ui-mini"></a>
+
+		<div id="tnr-info-container" class="ui-body ui-body-a ui-corner-all"></div>
+
+		<div data-role="popup" id="favorite-popup" data-overlay-theme="b" data-dismissible="false">
+			<div role="main" class="ui-content">
+				<p>Added to your favorite list.</p>
+				<a class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b ui-mini" data-rel="back">OK</a>
+			</div>
+		</div>
+
+		<script>
+			var tnr_id = $.cookie('tnr-info-id');
+				
+			if(typeof tnr_id === 'undefined') {
+				$.mobile.changePage('tnr-list.html', {transition: 'none'});
+			}
+			
+			$('.btn-back').attr('href', $.cookie('from') + '.html');
+			
+			// get Treatment & Rehabilitation detail using id stored in cookie
+			$.ajax({
+				method: "GET",
+				url: "api/tnr-info.php",
+				data: {'id': tnr_id},
+				dataType: 'JSON',
+				context: this
+			}).done(function (result) {
+				if(result.status) {				
+					// apply content and build elements with jQuery
+					var info = result.data;
+					$('#tnr-info .title').text(info.name);
+					$('#tnr-info-container').append(
+						$('<h6 />').append(
+							$('<strong />').text('Target:'), 
+							$('<div />').text(info.target)
+						), 
+						$('<h6 />').append(
+							$('<strong />').text('Client:'), 
+							$('<div />').text(info.client)
+						), 
+						$('<h6 />').append(
+							$('<strong />').text('Tel:'), 
+							$('<div />').text(info.tel)
+						), 
+						$('<h6 />').append(
+							$('<strong />').text('Duration:'), 
+							$('<div />').text(info.duration)
+						)
+					);
+				}
+			});
+			
+			// check auth for show/hide favorite list
+			$.ajax({
+				method: "get",
+				url: "api/auth/check.php",
+				dataType: 'JSON'
+			}).done(function( result ) {
+				if(!result.status) {
+					$('.btn-favorite').hide();
+				} else {
+					$('.btn-favorite').data('id', tnr_id);
+				}
+			});
+		</script>
+	</div>
+</div>

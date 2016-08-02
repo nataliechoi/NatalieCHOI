@@ -1,0 +1,137 @@
+<div id="activity-info-api" data-role="page">
+	
+	<style scoped>
+		.activity-info-api-container > div {
+			padding-top: 15px;
+			padding-bottom: 15px;
+		}
+		
+		.activity-info-api-container > hr {
+			padding: 0;
+			margin: 0;
+			height: 1px;
+			border: none;
+			background-color: #ddd;
+		}
+		
+		.activity-info-api-container .api {
+			color: darkred;
+			font-weight: bold;
+		}
+		
+		.activity-info-api-container textarea {
+			resize: none;
+			font-size: 12px;
+		}
+		
+		.activity-info-api-container pre {
+			overflow: auto;
+			background-color: #eee;
+			padding: 5px;
+			margin: 0;
+		}
+	</style>
+	
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<a href="api-list.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+	
+	<div role="main" class="ui-content">
+
+		<h2 class="title">Anti-Drug Activity Detail API</h2>
+		
+		<div class="activity-info-api-container ui-body ui-body-a ui-corner-all">
+			<div>
+				Method
+				<div id="method" class="api"></div>
+			</div>
+			<hr />
+			<div>
+				URL
+				<div id="url" class="api"></div>
+			</div>
+		</div>
+		
+		<div class="activity-info-api-container ui-body ui-body-a ui-corner-all">
+			<div>
+				DEMO Request
+				<textarea id="request" class="api"></textarea>
+				<pre id="response"></pre>
+				<input id="submit-request" type="button" value="Try it" />
+			</div>
+		</div>
+		
+		<div class="activity-info-api-container ui-body ui-body-a ui-corner-all">
+			<div>
+				<span style="color:darkgreen;">Success</span>
+				<pre id="success"></pre>
+			</div>
+			<hr />
+			<div>
+				<span style="color:darkblue;">Failure</span>
+				<pre id="fail"></pre>
+			</div>
+		</div>
+		
+		<script>
+			// Get api info from cookie
+			var api = $.cookie('api-info');
+				
+			// Return to api list page if no cookie
+			if(typeof api === 'undefined') {
+				$.mobile.changePage('api-list.html', {transition: 'none'});
+			}
+			
+			// Parse cookie to object
+			api = JSON.parse(api);
+						
+			$('#method').text(api.method);
+			$('#url').text(api.url);
+			
+			// Setup success and fail responses
+			$('#success').text(JSON.stringify({
+				'status': 1, 
+				'message': 'Success', 
+				'data': {
+					"name": "Narcotics Division (ND) Drug Awareness Workshop",
+					"content": "Peer influence, stress, anxiety and curiosity are only a few of the many reasons that can lead youth to take drugs. According to Central Registry of Drug Abuse, in 2014, 54.5% of reported drug abusers under 21 years old took drugs due to peer pressure, while 47.7% took drugs to relieve stress and boredom, and 37.1% due to curiosity. \r\n\r\nWith of reasons for drug use, it is important to take preventative measures through awareness raising and skills development. Supported by the Narcotics Division, KELY's Life Skill and Drug Awareness Workshops are designed to provide drug and alcohol awareness and prevention strategies to students from ethnic minority and non-Chinese speaking communities. Our range of workshops covers drugs, drinking and related issues such as self-esteem & bullying. Each year, KELY reaches an average of 8,000 students in over 50 English medium of Instruction secondary schools with this programme. Through experiential learning activities, group discussions and a fun, interactive training style, the programme covers a range of topics that allow young people to understand the risks associated with drugs and alcohol and develop their own values and strategies for drug prevention. Teachers can book these workshops by downloading the booking form and faxing it to us. Schools can book the workshops at a cost of $35* per student.  ",
+					"address": "KELY Support Group\r\n2/F East Wing \r\n12 Borrett Road\r\nCentral, Hong Kong",
+					"time": "2016-07-18 13:00:00"
+				}
+			}, null, 4));
+			
+			$('#fail').text(JSON.stringify({
+				'status': 0, 
+				'message': 'Bad Request'
+			}, null, 4));
+			
+			// Setup request form
+			var request = {};
+			if(typeof api.params !== 'undefined' && typeof api.values !== 'undefined') {
+				var params = api.params.split(',');
+				var values = api.values.split(',');
+				for(var i in params) {
+					request[params[i]] = values[i];
+				}
+			}
+			$('#request').val(JSON.stringify(request, null, 4));
+			
+			// Ajax to api with request form
+			$('#submit-request').click(function(e) {
+				$.ajax({
+					method: api.method,
+					url: api.url, 
+					data: JSON.parse($('#request').val()), 
+					dataType: 'JSON'
+				}).done(function(result) {
+					$('#response').text(JSON.stringify(result, null, 4));
+				});
+				e.preventDefault();
+				return false;
+			});
+		</script>
+
+	</div>
+</div>

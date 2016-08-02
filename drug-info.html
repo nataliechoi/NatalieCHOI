@@ -1,0 +1,90 @@
+<div id="drug-info" data-role="page">
+	
+	<style scoped>
+		.title {
+			padding-right: 30px;
+		}
+		
+		#drug-info .ui-content {
+			position: relative;
+		}
+		
+		#drug-info .title {
+			text-align: left;
+			margin: 0;
+		}
+
+		#favorite-popup {
+			max-width: 400px;
+			text-align: center;
+		}
+		
+		#drug-info-container img {
+			width: 100%;
+			margin-top: .6em;
+		}
+	</style>
+	
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<a href="drug-list.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+	
+	<div role="main" class="ui-content">
+
+		<h2 class="title"></h2>
+		
+		<a href="#favorite-popup"  data-type="drug" data-rel="popup" data-position-to="window" data-transition="pop" class="btn-favorite ui-btn ui-shadow ui-corner-all ui-icon-star ui-btn-b ui-btn-icon-notext ui-btn-inline ui-mini"></a>
+
+		<div id="drug-info-container" class="ui-body ui-body-a ui-corner-all"></div>
+
+		<div data-role="popup" id="favorite-popup" data-overlay-theme="b" data-dismissible="false">
+			<div role="main" class="ui-content">
+				<p>Added to your favorite list.</p>
+				<a class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b ui-mini" data-rel="back">OK</a>
+			</div>
+		</div>
+
+		<script>
+			var drug_id = $.cookie('drug-info-id');
+				
+			if(typeof drug_id === 'undefined') {
+				$.mobile.changePage('drug-list.html', {transition: 'none'});
+			}
+					
+			$('.btn-back').attr('href', $.cookie('from') + '.html');
+	
+			// Get drug info
+			$.ajax({
+				method: "GET",
+				url: "api/drug-info.php",
+				data: {'id': drug_id},
+				dataType: 'JSON',
+				context: this
+			}).done(function (result) {
+				if(result.status) {
+					var info = result.data;
+					$('#drug-info .title').text(info.name);
+					$('#drug-info-container').append(
+						$('<img src="assets/image/drug-list/' + info.pic + '" />'), 
+						$('<p />').text(info.content)
+					);
+				}
+			});
+						
+			// check auth for show/hide favorite list
+			$.ajax({
+				method: "get",
+				url: "api/auth/check.php",
+				dataType: 'JSON'
+			}).done(function( result ) {
+				if(!result.status) {
+					$('.btn-favorite').hide();
+				} else {
+					$('.btn-favorite').data('id', drug_id);
+				}
+			});
+		</script>
+	</div>
+</div>

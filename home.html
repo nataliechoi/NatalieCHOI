@@ -1,0 +1,166 @@
+<div id="home" data-role="page">
+
+	<style scoped>
+		.ui-field-contain {
+			border-bottom: none;
+		}
+
+		.ui-input-search:after {
+			left: .5125em;
+		}
+
+		.icon-container {
+			margin-top: 10px;
+			margin-left: -10px;
+			margin-right: -10px;
+		}
+
+		.icon-container .grids {
+			padding: 10px;
+			margin-bottom: 5px;
+			text-align: center;
+		}
+
+		.icon-container .grids a {
+			text-decoration: none;
+			color: black;
+		}
+
+		.icon-container .grids a small {
+			font-size: 12px;
+		}
+
+		.icon-container .grids img {
+			width: 100%;
+			margin-bottom: 5px;
+			-webkit-border-radius: 10px;
+			-moz-border-radius: 10px;
+			border-radius: 10px;
+			-webkit-box-shadow: 0px 0px 5px 1px rgba(0,0,0,0.25);
+			-moz-box-shadow: 0px 0px 5px 1px rgba(0,0,0,0.25);
+			box-shadow: 0px 0px 5px 1px rgba(0,0,0,0.25);
+		}
+	</style>
+
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<!--Menu Button-->
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<!--Personal Information Button, shows only logged-in-->
+		<a href="personal.html" data-transition="flip" data-direction="reverse" class="btn-personal ui-btn ui-btn-icon-notext ui-corner-all ui-icon-user ui-nodisc-icon ui-alt-icon ui-btn-left">Personal Information</a>
+	</div>
+
+	<div id="content" role="main" class="ui-content">
+
+		<!--Search Container-->
+		<div data-role="fieldcontain" class="ui-hide-label">
+			<!--Search Bar-->
+			<label for="search">Search:</label>
+			<input type="search" name="search" id="search" data-type="search" />
+			<!--Search Result Container to contain the search result from AJAX loaded-->
+			<ul id="search-result" data-role="listview" data-filter="true" data-filter-reveal="true" data-input="#search" data-inset="true"></ul>
+		</div>
+
+		<!--6 icons container with jQueryMobile Grid-->
+		<div id="home-container" class="icon-container ui-grid-b">
+			<div class="grids ui-block-a">
+				<a href="drug-list.html" data-transition="slide">
+					<img alt="Drug Information" src="assets/image/index/drug_info.jpg" />
+					<small>Drug Information</small>
+				</a>
+			</div>
+			<div class="grids ui-block-b">
+				<a href="tnr-list.html" data-transition="slide">
+					<img alt="Treatment & Rehabilitation" src="assets/image/index/tnr.jpg" />
+					<small>Treatment & Rehabilitation</small>
+				</a>
+			</div>
+			<div class="grids ui-block-c">
+				<a href="seekhelp-list.html" data-transition="slide">
+					<img alt="Seek Help" src="assets/image/index/seek_help.jpg" />
+					<small>Seek Help</small>
+				</a>
+			</div>
+			<div class="grids ui-block-a">
+				<a href="activity-list.html" data-transition="slide">
+					<img alt="Anti-drug Activities" src="assets/image/index/activity.jpg" />
+					<small>Anti-drug Activities</small>
+				</a>
+			</div>
+			<div class="grids ui-block-b">
+				<a href="video-list.html" data-transition="slide">
+					<img alt="Anti-drug Video" src="assets/image/index/video.jpg" />
+					<small>Anti-drug Videos</small>
+				</a>
+			</div>
+			<div class="grids ui-block-c">
+				<a href="contact-us.html" data-transition="slide">
+					<img alt="Contact Us" src="assets/image/index/contact_us.jpg" />
+					<small>Contact Us</small>
+				</a>
+			</div>
+		</div>
+	</div>
+	
+	<script>
+		// User search event listener
+		$( "#search-result" ).on( "filterablebeforefilter", function ( e, data ) {
+			var $ul = $( this ),
+				$input = $( data.input ),
+				value = $input.val();
+			$ul.html( "" );
+			if ( value && value.length > 2 ) {
+				// When user entered 2 or more keywords, start AJAX
+				$.ajax({
+					url: "api/search.php",
+					method: "post",
+					dataType: 'json', 
+					data: {
+						keyword: $input.val()
+					}
+				}).done( function ( result ) {
+					if(result.status) { 
+						// Loop through all result data and build elements with jQuery
+						for(var i in result.data) {
+							$ul.append(
+								$('<li data-filtertext="' + $input.val() + '" />').append(
+									$('<a />')
+										.attr({
+											'href': result.data[i].type + '-info.html', 
+											'data-transition': 'slide'
+										})
+										.data({
+											'id': result.data[i].source, 
+											'type': result.data[i].type
+										})
+										.text(result.data[i].name)
+										.click(function() {
+											// When user clicked one of result, save the element id to cookie
+											$.cookie($(this).data('type') + '-info-id', $(this).data('id'));
+											// Save the back page to cookie
+											$.cookie('from', 'home');
+										})
+								)
+							);
+						}
+						// After put all elements to search result container, refresh the jQueryMobile element views
+						$ul.listview( "refresh" );
+						$ul.trigger( "updatelayout");
+					}
+				});
+			}
+		});
+		
+		// AJAX to check if the user is logged-in 
+		$.ajax({
+			method: "get",
+			url: "api/auth/check.php",
+			dataType: 'JSON'
+		}).done(function( result ) {
+			if(!result.status) { 
+				// If not yet login, hide the personal information button
+				$('.btn-personal').hide();
+			}
+		});
+	</script>
+</div>

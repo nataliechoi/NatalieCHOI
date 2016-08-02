@@ -1,0 +1,108 @@
+<div id="activity-info" data-role="page">
+	
+	<style scoped>
+		.title {
+			padding-right: 30px;
+		}
+		
+		#activity-info .ui-content {
+			position: relative;
+		}
+		
+		#activity-info .title {
+			text-align: left;
+			margin: 0;
+		}
+		
+		#favorite-popup {
+			max-width: 400px;
+			text-align: center;
+		}
+		
+		#activity-info-container h6 {
+			margin: 0;
+			padding-top: 1em;
+			padding-bottom: 1em;
+			border-bottom: 1px solid #ddd;
+			font-weight: normal;
+			color: darkblue;
+			text-align: center;
+		}
+		
+		#activity-info-container h6 strong {
+			color: black;
+		}
+	</style>
+	
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<a href="activity-list.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+	
+	<div role="main" class="ui-content">
+
+		<h2 class="title"></h2>
+		
+		<a href="#favorite-popup" data-type="activity" data-rel="popup" data-position-to="window" data-transition="pop" class="btn-favorite ui-btn ui-shadow ui-corner-all ui-icon-star ui-btn-b ui-btn-icon-notext ui-btn-inline ui-mini"></a>
+
+		<div id="activity-info-container" class="ui-body ui-body-a ui-corner-all"></div>
+
+		<div data-role="popup" id="favorite-popup" data-overlay-theme="b" data-dismissible="false">
+			<div role="main" class="ui-content">
+				<p>Added to your favorite list.</p>
+				<a class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b ui-mini" data-rel="back">OK</a>
+			</div>
+		</div>
+
+		<script>
+			var activity_id = $.cookie('activity-info-id');
+				
+			if(typeof activity_id === 'undefined') {
+				$.mobile.changePage('activity-list.html', {transition: 'none'});
+			}
+			
+			$('.btn-back').attr('href', $.cookie('from') + '.html');
+			
+			
+			// Get activities from AJAX
+			$.ajax({
+				method: "GET",
+				url: "api/activity-info.php",
+				data: {'id': activity_id},
+				dataType: 'JSON',
+				context: this
+			}).done(function (result) {
+				if(result.status) {				
+					// build elements with jQuery
+					var info = result.data;
+					$('#activity-info .title').text(info.name);
+					$('#activity-info-container').append(
+						$('<h6 />').append(
+							$('<strong />').text('Time:'), 
+							$('<div />').text(info.time)
+						), 
+						$('<h6 />').append(
+							$('<strong />').text('Address:'), 
+							$('<div />').text(info.address)
+						), 
+						$('<p />').text(info.content)
+					);
+				}
+			});
+			
+			// check auth for show/hide favorite list
+			$.ajax({
+				method: "get",
+				url: "api/auth/check.php",
+				dataType: 'JSON'
+			}).done(function( result ) {
+				if(!result.status) {
+					$('.btn-favorite').hide();
+				} else {
+					$('.btn-favorite').data('id', activity_id);
+				}
+			});
+		</script>
+	</div>
+</div>

@@ -1,0 +1,142 @@
+<div id="personal-change-api" data-role="page">
+	
+	<style scoped>
+		.personal-change-api-container > div {
+			padding-top: 15px;
+			padding-bottom: 15px;
+		}
+		
+		.personal-change-api-container > hr {
+			padding: 0;
+			margin: 0;
+			height: 1px;
+			border: none;
+			background-color: #ddd;
+		}
+		
+		.personal-change-api-container .api {
+			color: darkred;
+			font-weight: bold;
+		}
+		
+		.personal-change-api-container textarea {
+			resize: none;
+			font-size: 12px;
+		}
+		
+		.personal-change-api-container pre {
+			overflow: auto;
+			background-color: #eee;
+			padding: 5px;
+			margin: 0;
+		}
+	</style>
+	
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<a href="api-list.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+	
+	<div role="main" class="ui-content">
+
+		<h2 class="title">Change Personal Information API</h2>
+		
+		<div class="personal-change-api-container ui-body ui-body-a ui-corner-all">
+			<div>
+				Method
+				<div id="method" class="api"></div>
+			</div>
+			<hr />
+			<div>
+				URL
+				<div id="url" class="api"></div>
+			</div>
+		</div>
+		
+		<div class="personal-change-api-container ui-body ui-body-a ui-corner-all">
+			<div>
+				DEMO Request
+				<textarea id="request" class="api"></textarea>
+				<pre id="response"></pre>
+				<input id="submit-request" type="button" value="Try it" />
+			</div>
+		</div>
+		
+		<div class="personal-change-api-container ui-body ui-body-a ui-corner-all">
+			<div>
+				<span style="color:darkgreen;">Success</span>
+				<pre id="success"></pre>
+			</div>
+			<hr />
+			<div>
+				<span style="color:darkblue;">Failure</span>
+				<pre id="fail"></pre>
+			</div>
+			<hr />
+			<div>
+				<span style="color:darkblue;">Failure</span>
+				<pre id="fail2"></pre>
+			</div>
+		</div>
+		
+		<script>
+			// Get api info from cookie
+			var api = $.cookie('api-info');
+				
+			// Return to api list page if no cookie
+			if(typeof api === 'undefined') {
+				$.mobile.changePage('api-list.html', {transition: 'none'});
+			}
+			
+			// Parse cookie to object
+			api = JSON.parse(api);
+						
+			$('#method').text(api.method);
+			$('#url').text(api.url);
+			
+			// Setup success and fail responses
+			$('#success').text(JSON.stringify({
+				'status': 1, 
+				'message': 'Success', 
+				'data': null
+			}, null, 4));
+			
+			$('#fail').text(JSON.stringify({
+				'status': 0, 
+				'message': 'You must login to access this area'
+			}, null, 4));
+			
+			$('#fail2').text(JSON.stringify({
+				'status': 0, 
+				'message': 'Bad Request'
+			}, null, 4));
+			
+			// Setup request form
+			var request = {};
+			if(typeof api.params !== 'undefined' && typeof api.values !== 'undefined') {
+				var params = api.params.split(',');
+				var values = api.values.split(',');
+				for(var i in params) {
+					request[params[i]] = values[i];
+				}
+			}
+			$('#request').val(JSON.stringify(request, null, 4));
+			
+			// Ajax to api with request form
+			$('#submit-request').click(function(e) {
+				$.ajax({
+					method: api.method,
+					url: api.url, 
+					data: JSON.parse($('#request').val()), 
+					dataType: 'JSON'
+				}).done(function(result) {
+					$('#response').text(JSON.stringify(result, null, 4));
+				});
+				e.preventDefault();
+				return false;
+			});
+		</script>
+
+	</div>
+</div>

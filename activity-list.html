@@ -1,0 +1,67 @@
+<div id="activity-list" data-role="page">
+
+	<style scoped>
+		#activity-list-container {
+			margin-top: 0;
+		}
+		
+		#activity-list-container a {
+			padding-right: 110px;
+		}
+	</style>
+
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<!--Menu Button-->
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<!--Back to home page Button-->
+		<a href="home.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+
+	<div role="main" class="ui-content">
+		<h2 class="title">Anti-drug Activities</h2>
+		<!--Container to contain activities from AJAX loaded-->
+		<ul id="activity-list-container" data-role="listview"></ul>
+	</div>
+
+	<script>
+		// Get activities from AJAX
+		$.ajax({
+			method: "GET",
+			url: "api/activity-list.php",
+			dataType: 'JSON',
+			context: this
+		}).done(function (result) {
+			if(result.status) {
+				var activities = result.data, 
+					$activityContainer = $('#activity-list-container');
+				// Loop through all activities data and build elements with jQuery
+				for (var i in activities) {
+					$activityContainer.append(
+						$('<li />').append(
+							$('<a />')
+								.attr({
+									'href': 'activity-info.html', 
+									'data-ajax': 'true', 
+									'data-transition': 'slide', 
+									'data-id': activities[i].id
+								})
+								.append(
+									$('<h2 />').text(activities[i].name), 
+									$('<p class="ui-li-aside" />').text(activities[i].time)
+								)
+								.click(function() {
+									// When user clicked one of activity, save the activity id to cookie
+									$.cookie('activity-info-id', $(this).data('id'));
+									// Save the back page to cookie
+									$.cookie('from', 'activity-list');
+								})
+						)
+					);
+				}
+				// After put all activities to container, refresh the jQueryMobile element views
+				$activityContainer.listview('refresh');
+			}
+		});
+	</script>
+</div>

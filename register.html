@@ -1,0 +1,72 @@
+<div id="register" data-role="page">
+	
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<!--Menu Button-->
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<!--Back to login page Button-->
+		<a href="login.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+
+	<div role="main" class="ui-content">
+		<div class="avatar-container">
+			<img alt="" src="assets/image/user.png" />
+			<div>Create an account</div>
+		</div>
+
+		<!--Popup when register failed-->
+		<div data-role="popup" id="register-popup" data-overlay-theme="b" data-transition="slidedown">
+			<div data-role="header"><h1></h1></div>
+			<div role="main" class="ui-content"><p></p></div>
+		</div>
+
+		<!--Register Form-->
+		<form id="register-form" action="api/auth/register.php" method="post">
+			<div data-role="fieldcontain">
+				<input type="text" name="first_name" placeholder="First Name" data-clear-btn="true" />
+				<input type="text" name="last_name" placeholder="Last Name" data-clear-btn="true" />
+				<input type="email" name="email" placeholder="Email" data-clear-btn="true" />
+				<input type="password" name="password" placeholder="Password" data-clear-btn="true" />
+				<input type="password" name="password2" placeholder="Confirm Password" data-clear-btn="true" />
+			</div>
+			<div data-role="fieldcontain" class="ui-hide-label">
+				<input type="submit" data-theme="b" value="Sign up" />
+			</div>
+		</form>
+	</div>
+
+	<script>
+		// If OAuth Logged-in then switch to home page
+		if(hello('google').getAuthResponse() || hello('facebook').getAuthResponse()) {
+			$.mobile.changePage('home.html', {transition: 'fade', reverse: 'true'});
+		}
+		
+		$('#register-form').submit(function (e) {
+			$.ajax({
+				method: "post",
+				url: "api/auth/register.php",
+				data: $(this).serialize(),
+				dataType: 'JSON'
+			}).done(function (result) {
+				// Show popup message no matter successed or failed
+				$('#register-popup h1').text('Register ' + (result ? 'Success' : 'Failure'));
+				$('#register-popup p').text(result.message);
+				$('#register-popup').data('status', result.status).popup('open');
+			});
+			e.preventDefault();
+			return false;
+		});
+
+		$('#register-popup').on("popupafterclose", function (event) {
+			if($(this).data('status')) {
+				// Redirect to home page when registered success
+				window.location.hash = 'login';
+				window.location.reload(true);
+			} else {
+				// Reset form when registered failure
+				$('#register-form').get(0).reset();
+			}
+		});
+	</script>
+
+</div>

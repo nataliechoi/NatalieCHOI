@@ -1,0 +1,181 @@
+<div id="api" data-role="page">
+
+	<style scoped>
+		#api-container {
+			margin-top: 0;
+		}
+
+		#api-container a {
+			padding-top: 0;
+			padding-bottom: 0;
+		}
+	</style>
+
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<a href="home.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+
+	<div role="main" class="ui-content">
+		<h2 class="title">APIs</h2>
+		<ul id="api-container" data-role="listview">
+			<li data-role="list-divider">Authorization</li>
+			<li>
+				<a href="login-api.html" data-transition="slide" data-method="POST" data-params="username,password" data-values="chantaiman@gmail.com,123456">
+					<h2>Login</h2>
+					<p>api/auth/login.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="register-api.html" data-transition="slide" data-method="POST" data-params="first_name,last_name,email,password,password2" data-values="Tai Man,Chan,taimanchan@gmail.com,123456,123456">
+					<h2>Register</h2>
+					<p>api/auth/register.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="logout-api.html" data-transition="slide" data-method="GET">
+					<h2>Logout</h2>
+					<p>api/auth/logout.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="check-api.html" data-transition="slide" data-method="GET">
+					<h2>Verify Logged-in</h2>
+					<p>api/auth/check.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="third_party-api.html" data-transition="slide" data-method="POST" data-params="auth,data" data-values="google,{OAuth 2 API Data}">
+					<h2>Social Platform Login / Register</h2>
+					<p>api/auth/third_party.php</p>
+				</a>
+			</li>
+
+			<li data-role="list-divider">Information</li>
+			<li>
+				<a href="search-api.html" data-transition="slide" data-method="POST" data-params="keyword" data-values="drug">
+					<h2>Search</h2>
+					<p>api/search.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="drug-list-api.html" data-transition="slide" data-method="GET">
+					<h2>Drugs List</h2>
+					<p>api/drug-list.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="drug-info-api.html" data-transition="slide" data-method="GET" data-params="id" data-values="1">
+					<h2>Drug Detail</h2>
+					<p>api/drug-info.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="tnr-list-api.html" data-transition="slide" data-method="GET">
+					<h2>Treatment & Rehabilitation List</h2>
+					<p>api/tnr-list.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="tnr-info-api.html" data-transition="slide" data-method="GET" data-params="id" data-values="1">
+					<h2>Treatment & Rehabilitation Detail</h2>
+					<p>api/tnr-info.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="seekhelp-list-api.html" data-transition="slide" data-method="GET">
+					<h2>Seek Help List</h2>
+					<p>api/seekhelp-list.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="seekhelp-info-api.html" data-transition="slide" data-method="GET" data-params="id" data-values="1">
+					<h2>Seek Help Detail</h2>
+					<p>api/seekhelp-info.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="activity-list-api.html" data-transition="slide" data-method="GET">
+					<h2>Anti-drug Activities List</h2>
+					<p>api/activity-list.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="activity-info-api.html" data-transition="slide" data-method="GET" data-params="id" data-values="1">
+					<h2>Anti-drug Activity Detail</h2>
+					<p>api/activity-info.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="video-list-api.html" data-transition="slide" data-method="GET">
+					<h2>Anti-drug Videos List</h2>
+					<p>api/video-list.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="video-info-api.html" data-transition="slide" data-method="GET" data-params="id" data-values="1">
+					<h2>Anti-drug Video Detail</h2>
+					<p>api/video-info.php</p>
+				</a>
+			</li>
+
+			<li data-role="list-divider">User Activities</li>
+			<li>
+				<a href="personal-api.html" data-transition="slide" data-method="GET">
+					<h2>My Personal Information</h2>
+					<p>api/my/personal.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="personal-change-api.html" data-transition="slide" data-method="PUT" data-params="last_name,first_name" data-values="Chan,Tai Man">
+					<h2>Change Personal Information</h2>
+					<p>api/my/personal.php?update</p>
+				</a>
+			</li>
+			<li>
+				<a href="personal-changepw-api.html" data-transition="slide" data-method="PUT" data-params="old_password,new_password,confirm_password" data-values="123456,654321,654321">
+					<h2>Change My Password</h2>
+					<p>api/my/personal.php?changepw</p>
+				</a>
+			</li>
+			<li>
+				<a href="favorite-api.html" data-transition="slide" data-method="GET">
+					<h2>My Favorite List</h2>
+					<p>api/my/favorite.php</p>
+				</a>
+			</li>
+			<li>
+				<a href="favorite-create-api.html" data-transition="slide" data-method="POST" data-params="type,source_id" data-values="drug,1">
+					<h2>Add to My Favorite List</h2>
+					<p>api/my/favorite.php?create</p>
+				</a>
+			</li>
+			<li>
+				<a href="favorite-remove-api.html" data-transition="slide" data-method="DELETE" data-params="favorites">
+					<h2>Remove from My Favorite List</h2>
+					<p>api/my/favorite.php?remove</p>
+				</a>
+			</li>
+			<li>
+				<a href="comment-create-api.html" data-transition="slide" data-method="POST" data-params="video_id,comment" data-values="1,Good Video!">
+					<h2>Add My Video Comment</h2>
+					<p>api/my/comment.php?create</p>
+				</a>
+			</li>
+		</ul>
+	</div>
+
+	<script>
+		// store detail for display in cookie before redirect
+		$('#api-container a').click(function () {
+			$.cookie('api-info', JSON.stringify({
+				'method': $(this).data('method'), 
+				'url': $(this).children('p').text(), 
+				'params': $(this).data('params'), 
+				'values': $(this).data('values') + ''
+			}));
+		});
+	</script>
+
+</div>

@@ -1,0 +1,74 @@
+<div id="drug-list" data-role="page">
+
+	<style scoped>
+		#drug-list-container {
+			margin-top: 0;
+		}
+
+		#drug-list-container img {
+			margin-top: 0.7em;
+			margin-left: 0.7em;
+			width: 60px;
+			height: 60px;
+			border-radius: 30px;
+			-webkit-border-radius: 30px;
+			-moz-border-radius: 30px;
+			box-shadow: 0 0 4px rgba(0, 0, 0, .4);
+			-webkit-box-shadow: 0 0 4px rgba(0, 0, 0, .4);
+			-moz-box-shadow: 0 0 4px rgba(0, 0, 0, .4);
+		}
+
+		#drug-list-container h2 {
+			margin-top: 20px;
+		}
+	</style>
+
+	<div data-role="header" data-position="fixed" data-tap-toggle="false">
+		<h1>Narcotics Journal</h1>
+		<a href="#" class="btn-navmenu ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-right">Menu</a>
+		<a href="home.html" data-transition="slide" data-direction="reverse" class="btn-back ui-btn ui-btn-icon-notext ui-corner-all ui-icon-carat-l ui-nodisc-icon ui-alt-icon ui-btn-left">Back</a>
+	</div>
+
+	<div role="main" class="ui-content">
+		<h2 class="title">Drugs Information</h2>
+		<ul id="drug-list-container" data-role="listview"></ul>
+	</div>
+
+	<script>
+		// Get drug list
+		$.ajax({
+			method: "GET",
+			url: "api/drug-list.php",
+			dataType: 'JSON',
+			context: this
+		}).done(function (result) {
+			if(result.status) {
+				var drugs = result.data, 
+					$drugContainer = $('#drug-list-container');
+					
+				// Loop through all data and build elements with jQuery
+				for (var i in drugs) {
+					$drugContainer.append(
+						$('<li />').append(
+							$('<a />')
+								.attr({
+									'href': 'drug-info.html', 
+									'data-transition': 'slide', 
+									'data-id': drugs[i].id
+								})
+								.append(
+									$('<img src="assets/image/drug-list/' + drugs[i].pic + '" />'),
+									$('<h2 />').text(drugs[i].name)
+								)
+								.click(function() {
+									$.cookie('drug-info-id', $(this).data('id'));
+									$.cookie('from', 'drug-list');
+								})
+						)
+					);
+				}
+				$drugContainer.listview('refresh');
+			}
+		});
+	</script>
+</div>
